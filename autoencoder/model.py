@@ -5,17 +5,17 @@ from torch.nn import functional as F
 
 
 class UserAutoEncoder(pl.LightningModule):
-    def __init__(self):
+    def __init__(self, n_features: int):
         super(UserAutoEncoder, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(10, 32),
+            nn.Linear(n_features, 32),
             nn.ReLU(),
             nn.Linear(32, 64)
         )
         self.decoder = nn.Sequential(
             nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(32, 10)
+            nn.Linear(32, n_features)
         )
 
     def forward(self, x):
@@ -34,9 +34,3 @@ class UserAutoEncoder(pl.LightningModule):
         self.log('train_loss', loss)
         return loss
 
-    def validation_step(self, batch, batch_idx):
-        x = batch
-        z = self.encoder(x)
-        x_hat = self.decoder(z)
-        loss = F.mse_loss(x_hat, x)
-        self.log('val_loss', loss)
