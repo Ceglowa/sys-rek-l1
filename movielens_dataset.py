@@ -19,15 +19,26 @@ class MovielensDataModule(LightningDataModule):
         self.movie_test = None
         self.rating_train = None
         self.rating_test = None
+        self.movies = None
+        self.users = None
+        self.ratings = None
 
     def setup(self, **kwargs):
         movies_df, users_df, ratings_df = get_movielens_1m()
-        ratings_df['rating_scaled'] = MinMaxScaler().fit_transform(ratings_df['Rating'].values[:, None])
-        ratings_sorted = ratings_df.sort_values(by='Timestamp')
+        self.movies = movies_df
+        self.users = users_df
+        self.ratings = ratings_df
+        self.movies['m_id'] = self.movies.index
+        self.users['u_id'] = self.users.index
 
-        user_ids = ratings_sorted['UserID'].values[:, None]
-        movie_ids = ratings_sorted['MovieID'].values[:, None]
-        rating = ratings_sorted['rating_scaled'].values[:, None]
+        self.ratings = self.ratings.merge(self.movies[['MovieID', 'm_id']], left_on='MovieID', right_on='MovieID')
+        self.ratings = self.ratings.merge(self.users[['UserID', 'u_id']], left_on='UserID', right_on='UserID')
+        self.ratings['rating_scaled'] = MinMaxScaler().fit_transform(ratings_df['Rating'].values[:, None])
+        self.ratings.sort_values(by='Timestamp', inplace=True)
+
+        user_ids = self.ratings['u_id'].values[:, None]
+        movie_ids = self.ratings['m_id'].values[:, None]
+        rating = self.ratings['rating_scaled'].values[:, None]
 
         user_train, user_test, movie_train, movie_test, rating_train, rating_test = train_test_split(user_ids, movie_ids, rating)
 

@@ -8,23 +8,15 @@ import torch
 
 class NCF(pl.LightningModule):
     """ Neural Collaborative Filtering (NCF)
-
-        Args:
-            num_users (int): Number of unique users
-            num_items (int): Number of unique items
-            ratings (pd.DataFrame): Dataframe containing the movie ratings for training
-            all_movie_ids (list): List containing all movieIds (train + test)
     """
 
-    def __init__(self, num_users, num_items, ratings, all_movie_ids):
+    def __init__(self, n_users, n_items):
         super().__init__()
-        self.user_embedding = nn.Embedding(num_embeddings=num_users, embedding_dim=8)
-        self.item_embedding = nn.Embedding(num_embeddings=num_items, embedding_dim=8)
-        self.fc1 = nn.Linear(in_features=16, out_features=64)
-        self.fc2 = nn.Linear(in_features=64, out_features=32)
+        self.user_embedding = nn.Embedding(num_embeddings=n_users, embedding_dim=25)
+        self.item_embedding = nn.Embedding(num_embeddings=n_items, embedding_dim=25)
+        self.fc1 = nn.Linear(in_features=50, out_features=100)
+        self.fc2 = nn.Linear(in_features=100, out_features=32)
         self.output = nn.Linear(in_features=32, out_features=1)
-        self.ratings = ratings
-        self.all_movieIds = all_movie_ids
 
     def forward(self, user_input, item_input):
         user_embedded = self.user_embedding(user_input)
@@ -47,7 +39,3 @@ class NCF(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters())
-
-    def train_dataloader(self):
-        return DataLoader(MovieLensTrainDataset(self.ratings, self.all_movieIds),
-                          batch_size=512, num_workers=4)
