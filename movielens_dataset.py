@@ -40,7 +40,7 @@ class MovielensDataModule(LightningDataModule):
         movie_ids = self.ratings['m_id'].values[:, None]
         rating = self.ratings['rating_scaled'].values[:, None]
 
-        user_train, user_test, movie_train, movie_test, rating_train, rating_test = train_test_split(user_ids, movie_ids, rating)
+        user_train, user_test, movie_train, movie_test, rating_train, rating_test = train_test_split(user_ids, movie_ids, rating, train_size=0.8, stratify=user_ids)
 
         self.user_train = user_train
         self.user_test = user_test
@@ -51,15 +51,21 @@ class MovielensDataModule(LightningDataModule):
 
     def train_dataloader(self):
         train_split = MovieLensDataset(self.user_train, self.movie_train, self.rating_train)
-        return DataLoader(train_split)
+        return DataLoader(train_split, batch_size=512)
 
     def val_dataloader(self):
         val_split = MovieLensDataset(self.user_test, self.movie_test, self.rating_test)
-        return DataLoader(val_split)
+        return DataLoader(val_split, batch_size=512)
 
     def test_dataloader(self):
         val_split = MovieLensDataset(self.user_test, self.movie_test, self.rating_test)
-        return DataLoader(val_split)
+        return DataLoader(val_split, batch_size=512)
+
+    def n_users(self) -> int:
+        return len(self.users)
+
+    def n_movies(self) -> int:
+        return len(self.movies)
 
 
 class MovieLensDataset(Dataset):
