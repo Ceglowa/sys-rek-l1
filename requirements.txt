@@ -6,3 +6,4 @@ jupyter==1.0.0
 pandas==1.2.3
 pytorch-lightning==1.2.4
 torch==1.7.1
+tqdm
